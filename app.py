@@ -17,15 +17,10 @@ class App(Tk):
         # Connect to database
         # TODO
 
-        top = self.winfo_toplevel()
-        top.rowconfigure(0, weight=1)
-        top.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=1)
-
         ## Menu
         self.menubar = Menu(self)
 
+        # File Menu
         self.filemenu = Menu(self.menubar, tearoff=False)
         self.filemenu.add_command(label="Open", command=self.browse_for, accelerator="Ctrl+O")
         self.filemenu.add_separator()
@@ -35,8 +30,14 @@ class App(Tk):
         self.bind_all("<Control-o>", self.browse_for)
         self.bind_all("<Control-w>", self.close_app)
 
-        self.config(menu=self.menubar)
+        # Help Menu
+        self.helpmenu = Menu(self.menubar, tearoff=False)
+        self.helpmenu.add_command(label="Documentation", command=self.open_docs, accelerator="Ctrl+?")
+        self.menubar.add_cascade(label="Help", menu=self.helpmenu)
 
+        self.bind_all("<Control-?>", self.open_docs)
+
+        self.config(menu=self.menubar)
 
         ## App window layout managed in tabs as a notebook widget
         self.tabbed_layout = ttk.Notebook(self)
@@ -116,6 +117,9 @@ class App(Tk):
 
     def build_sets(self):
         print("Clicked build set button...")
+
+    def open_docs(self, event=None):
+        webbrowser.open('https://github.com/paulrunco/set-builder')
 
     def close_app(self, event=None):
         self.quit()
