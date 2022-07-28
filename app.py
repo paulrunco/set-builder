@@ -3,7 +3,7 @@ from tkinter import messagebox as mb
 from tkinter import ttk
 import webbrowser
 
-from numpy import pad
+import functions
 
 class App(Tk):
     def __init__(self):
@@ -79,7 +79,7 @@ class App(Tk):
         self.selections.grid(row=3, column=0, columnspan=2, sticky='ew', padx=5, pady=5)
         
         ## Finished Options
-        self.finished = ['1540', '1560', '1620']
+        self.finished = ['-','1570']
         self.finished_options = StringVar(self)
         self.finished_options.set(self.finished[0])
 
@@ -117,6 +117,13 @@ class App(Tk):
 
     def build_sets(self):
         print("Clicked build set button...")
+        path_to_inventory_report = self.inventory_report_entry.get()
+        if path_to_inventory_report == "":
+            mb.showwarning(title="Warning: ID-10T", message="Please select an inventory report")
+            self.inventory_report_entry.config(background='red')
+            return
+        else:
+            functions.generate_sets(path_to_inventory_report, '1570', 1200, 605, 447)
 
     def open_docs(self, event=None):
         webbrowser.open('https://github.com/paulrunco/set-builder')
