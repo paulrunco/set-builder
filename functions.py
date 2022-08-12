@@ -28,9 +28,13 @@ def generate_sets(inventory_report, product, order_target_lbs, set_target_lbs, s
                 # Checking  remaining rolls to see which brings the set closest to target with the existing rolls unchanged
                 last_rolls = rolls.loc[rolls['Set'] == '']
                 last_rolls['Remainder'] = set_target_lbs - set_weight_lbs - last_rolls['Weight (Lbs)']
-                last_roll = last_rolls.loc[last_rolls['Remainder'] >= 0]['Remainder'].idxmin()
-                rolls.at[last_roll, 'Set'] = set_number
-                set_weight_lbs += rolls.at[last_roll, 'Weight (Lbs)'] # add last roll weight to set weight
+                last_rolls = last_rolls.loc[last_rolls['Remainder'] >= 0].sort_values(by=['Remainder'], ascending=[False])
+                print('last rolls > 0: \n', last_rolls)
+                if last_rolls.shape[0] > 0: # check if any rolls fit within the remainder
+                    last_roll = last_rolls.index[-1]
+                    print(last_roll)
+                    rolls.at[last_roll, 'Set'] = set_number
+                    set_weight_lbs += rolls.at[last_roll, 'Weight (Lbs)'] # add last roll weight to set weight
                 
                 break
 

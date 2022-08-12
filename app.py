@@ -79,27 +79,28 @@ class App(Tk):
         self.selections.grid(row=3, column=0, columnspan=2, sticky='ew', padx=5, pady=5)
         
         ## Finished Options
-        self.finished = ['-','1570']
-        self.finished_options = StringVar(self)
-        self.finished_options.set(self.finished[0])
+        self.finished = ['-','1475']
+        self.finished_option = StringVar(self)
+        self.finished_option.set(self.finished[0])
 
         ## Material Options
-        self.materials = ['ABC', 'DEF']
-        self.material_options = StringVar(self)
-        self.material_options.set(self.materials[0])
+        self.materials = ['1570']
+        self.material_option = StringVar(self)
+        self.material_option.set(self.materials[0])
 
         self.options_label = Label(self.selections, text="Product").grid(row=0, column=0, sticky='e', padx=5, pady=5)
-        self.finished_options = OptionMenu(self.selections, self.finished_options, *self.finished).grid(row=0, column=1, sticky='ew', padx=(0,5), pady=5)
+        self.finished_options = OptionMenu(self.selections, self.finished_option, *self.finished).grid(row=0, column=1, sticky='ew', padx=(0,5), pady=5)
         self.options_label = Label(self.selections, text="Weight (lbs)").grid(row=1, column=0, sticky='e', padx=5, pady=(0,5))
-        self.order_weight_entry = Entry(self.selections, width=8, textvariable=StringVar).grid(row=1, column=1, sticky='ew', padx=(0,5), pady=(0,5))
+        self.order_weight_entry = Entry(self.selections, width=8, textvariable=StringVar)
+        self.order_weight_entry.grid(row=1, column=1, sticky='ew', padx=(0,5), pady=(0,5))
         self.options_label = Label(self.selections, text="Material").grid(row=2, column=0, sticky='e', padx=5, pady=5)
-        self.finished_options = OptionMenu(self.selections, self.material_options, *self.materials).grid(row=2, column=1, sticky='ew', padx=(0,5), pady=5)
+        self.material_options = OptionMenu(self.selections, self.material_option, *self.materials).grid(row=2, column=1, sticky='ew', padx=(0,5), pady=5)
 
         ## Frame for set information
         self.information = LabelFrame(self.set_builder, relief='groove', borderwidth=1, text='Info')
         self.information.grid(row=3, column=2, columnspan=2, sticky='ewns', padx=5, pady=5)
 
-        self.num_cuts = Label(self.information, text="Cuts").grid(row=0, column=0, sticky='e', padx=5, pady=5)
+        # self.num_cuts = Label(self.information, text="Cuts").grid(row=0, column=0, sticky='e', padx=5, pady=5)
 
         # Generate sets
         self.set_builder = Button(self.set_builder, text="Generate sets", command=lambda: self.build_sets()
@@ -122,8 +123,16 @@ class App(Tk):
             mb.showwarning(title="Warning: ID-10T", message="Please select an inventory report")
             self.inventory_report_entry.config(background='red')
             return
+        finished = self.finished_option.get()
+        material = self.material_option.get()
+        order_target_lbs = int(self.order_weight_entry.get())
+        if order_target_lbs == '':
+            mb.showwarning(title="Warning: ID-10T", message="Please enter a target order weight")
+            self.order_weight_entry.config(background='red')
         else:
-            functions.generate_sets(path_to_inventory_report, '1570', 1200, 605, 447)
+            print(f'Assigning sets of {finished} using {material} up to {order_target_lbs} lbs')
+            rolls = functions.generate_sets(path_to_inventory_report, material, order_target_lbs, 604.8, 542.4)
+            # print(rolls)
 
     def open_docs(self, event=None):
         webbrowser.open('https://github.com/paulrunco/set-builder')
