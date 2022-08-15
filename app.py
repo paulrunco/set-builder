@@ -131,8 +131,7 @@ class App(Tk):
             self.order_weight_entry.config(background='red')
         else:
             print(f'Assigning sets of {finished} using {material} up to {order_target_lbs} lbs')
-            rolls = functions.generate_sets(path_to_inventory_report, material, order_target_lbs, 604.8, 542.4)
-            # print(rolls)
+            functions.generate_sets(path_to_inventory_report, finished, material, order_target_lbs, 604.8, 573.6)
 
     def open_docs(self, event=None):
         webbrowser.open('https://github.com/paulrunco/set-builder')

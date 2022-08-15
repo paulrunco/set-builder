@@ -1,7 +1,14 @@
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
 
-def generate_sets(inventory_report, product, order_target_lbs, set_target_lbs, set_min_lbs):
+def generate_sets(
+    inventory_report,
+    finished,
+    material, 
+    order_target_lbs, 
+    set_target_lbs, 
+    set_min_lbs
+    ):
 
     # Read the inventory report
     inventory = pd.read_excel(inventory_report, 'WebInv')
@@ -9,7 +16,7 @@ def generate_sets(inventory_report, product, order_target_lbs, set_target_lbs, s
     inventory['Set'] = "" # Add set column to product table
 
     # Filter to the parent material of interest
-    rolls = inventory.loc[inventory['Product'] == str(product)]
+    rolls = inventory.loc[inventory['Product'] == str(material)]
 
     rolls['Exp Date'] = rolls['Expiration Date'].dt.date
 
@@ -29,7 +36,6 @@ def generate_sets(inventory_report, product, order_target_lbs, set_target_lbs, s
                 last_rolls = rolls.loc[rolls['Set'] == '']
                 last_rolls['Remainder'] = set_target_lbs - set_weight_lbs - last_rolls['Weight (Lbs)']
                 last_rolls = last_rolls.loc[last_rolls['Remainder'] >= 0].sort_values(by=['Remainder'], ascending=[False])
-                print('last rolls > 0: \n', last_rolls)
                 if last_rolls.shape[0] > 0: # check if any rolls fit within the remainder
                     last_roll = last_rolls.index[-1]
                     print(last_roll)
@@ -47,6 +53,18 @@ def generate_sets(inventory_report, product, order_target_lbs, set_target_lbs, s
     
     print(f'Order weight: {order_weight_lbs} lbs of {order_target_lbs}')
     print(rolls.groupby(['Set']).sum()['Weight (Lbs)'])
+
+    with pd.ExcelWriter(
+        inventory_report,
+        mode="a",
+        if_sheet_exists="overlay"
+    ) as writer:
+        rolls.to_excel(
+            writer,
+            sheet_name=f'{material}->{finished}',
+            header=True,
+            index=False
+        )
 
     return rolls
 
