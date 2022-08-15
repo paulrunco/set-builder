@@ -18,19 +18,24 @@ def generate_sets(
     # Filter to the parent material of interest
     rolls = inventory.loc[inventory['Product'] == str(material)]
 
-    rolls['Exp Date'] = rolls['Expiration Date'].dt.date
+    # Check if there is enough material in inventory to meet order demand
+    if rolls['Weight (Lbs)'].sum() < order_target_lbs - set_min_lbs:
+        error = ValueError()
+        error.message = "Insufficient inventory to meet order demand."
+        raise error
+
+    rolls['Exp Date'] = rolls['Expiration Date'].dt.date # convert dates
 
     order_weight_lbs = 0
     set_number = 1 # starting set number
     while order_weight_lbs < order_target_lbs:
         set_weight_lbs = 0
         rolls = rolls.sort_values(by=['Exp Date', 'Weight (Lbs)'], ascending=[True, False])
-        # TODO filter to top N lots only
 
         for i, row in rolls.loc[rolls['Set'] == ''].iterrows():
             if set_weight_lbs + row['Weight (Lbs)'] < set_target_lbs:
-                set_weight_lbs += row['Weight (Lbs)']
                 rolls.at[i, 'Set'] = set_number
+                set_weight_lbs += row['Weight (Lbs)']
             else:
                 # Checking  remaining rolls to see which brings the set closest to target with the existing rolls unchanged
                 last_rolls = rolls.loc[rolls['Set'] == '']
@@ -42,6 +47,8 @@ def generate_sets(
                     rolls.at[last_roll, 'Set'] = set_number
                     set_weight_lbs += rolls.at[last_roll, 'Weight (Lbs)'] # add last roll weight to set weight
                 
+                if set_weight_lbs < set_min_lbs:
+                    print(f'Set {set_number} is underweight')
                 break
 
         order_weight_lbs += set_weight_lbs
