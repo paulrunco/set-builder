@@ -25,41 +25,48 @@ def generate_sets(
         raise error
 
     rolls['Exp Date'] = rolls['Expiration Date'].dt.date # convert dates
+    rolls = rolls.sort_values(by=['Exp Date', 'Weight (Lbs)'], ascending=[True, False])
+    rolls['DaysToExp'] = rolls['Expiration Date'] - pd.to_datetime('now') # days to expiration
 
     order_weight_lbs = 0
     set_number = 1 # starting set number
-    while order_weight_lbs < order_target_lbs:
+    while order_weight_lbs < order_target_lbs - set_min_lbs:
+
         set_weight_lbs = 0
-        rolls = rolls.sort_values(by=['Exp Date', 'Weight (Lbs)'], ascending=[True, False])
+        set_lots = []
+        while set_weight_lbs < set_min_lbs:
 
-        for i, row in rolls.loc[rolls['Set'] == ''].iterrows():
-            if set_weight_lbs + row['Weight (Lbs)'] < set_target_lbs:
-                rolls.at[i, 'Set'] = set_number
-                set_weight_lbs += row['Weight (Lbs)']
-            else:
-                # Checking  remaining rolls to see which brings the set closest to target with the existing rolls unchanged
-                last_rolls = rolls.loc[rolls['Set'] == '']
-                last_rolls['Remainder'] = set_target_lbs - set_weight_lbs - last_rolls['Weight (Lbs)']
-                last_rolls = last_rolls.loc[last_rolls['Remainder'] >= 0].sort_values(by=['Remainder'], ascending=[False])
-                if last_rolls.shape[0] > 0: # check if any rolls fit within the remainder
-                    last_roll = last_rolls.index[-1]
-                    print(last_roll)
-                    rolls.at[last_roll, 'Set'] = set_number
-                    set_weight_lbs += rolls.at[last_roll, 'Weight (Lbs)'] # add last roll weight to set weight
+            pick_rolls = rolls.loc[rolls['Set'] == ''] # only unassigned rolls
+            pick_rolls['Remainder'] = set_target_lbs - set_weight_lbs - pick_rolls['Weight (Lbs)'] # calculate remainder
+            pick_rolls = pick_rolls.loc[pick_rolls['Remainder'] >= 0] # don't go over set_target_lbs
+
+            pick_rolls['Score'] = (pick_rolls['Remainder']/pick_rolls['Remainder'].max() + pick_rolls['DaysToExp']/pick_rolls['DaysToExp'].max())/2
+
+            if len(set_lots) == 2:
+                pick_rolls = pick_rolls.loc[pick_rolls['Batch'].isin(set_lots)] # limit to N lots per set
+
+            if pick_rolls.shape[0] > 0: # any eligible rolls?
+
+                pick = pick_rolls['Score'].idxmin() # pick lowest scoring roll roll
+                rolls.at[pick, 'Set'] = set_number
+                set_weight_lbs += rolls.at[pick, 'Weight (Lbs)'] # add last roll weight to set weight
                 
-                if set_weight_lbs < set_min_lbs:
-                    print(f'Set {set_number} is underweight')
-                break
+                if len(set_lots) < 2: # add lots to set-lot-list if needed
+                    batch = rolls.at[pick, 'Batch']
+                    if batch not in set_lots:
+                        set_lots.append(batch)
+            else:
+                print('No eligible rolls')
+                print(set_lots)
+                print(rolls.loc[rolls['Set'] == set_number])
+                return
+     
+            print(f'Order weight: {order_weight_lbs} lbs of {order_target_lbs}')
+            print(rolls.groupby(['Set']).sum()['Weight (Lbs)'])
 
-        order_weight_lbs += set_weight_lbs
         set_number += 1
-
-        # Check if another set, even at minimum weight would overweight the order
-        if order_weight_lbs + set_min_lbs > order_target_lbs:
-            break
-    
-    print(f'Order weight: {order_weight_lbs} lbs of {order_target_lbs}')
-    print(rolls.groupby(['Set']).sum()['Weight (Lbs)'])
+        order_weight_lbs += set_weight_lbs    
+            
 
     with pd.ExcelWriter(
         inventory_report,
@@ -74,24 +81,5 @@ def generate_sets(
         )
 
     return rolls
-
-## TODO
-# def optimize_remainder(rolls, set_number):
-#     #Optimize existing rolls by removing heaviest roll in favor of another
-#     set_rolls = rolls.loc[rolls['Set'] == set_number]
-#     test_rolls = rolls.loc[rolls['Set'] == '']
-#     remainder = set_target_lbs - set_rolls['Weight (Lbs)'].sum() # starting remainder
-#     print(f'Starting remainder: {remainder}')
-#     for i, row in set_rolls.iterrows():
-#         print(i)
-#         test_weight = set_rolls['Weight (Lbs)'].sum() - row['Weight (Lbs)'] # weight of set with roll removed
-#         test_rolls['Remainder'] = set_target_lbs - (test_weight  + test_rolls['Weight (Lbs)'])
-#         print(test_rolls)
-
-    # TODO optimize set assignments to minimize remainder to set weight target
-    
-    # TODO Repeat until no more sets can be made with selected lots OR order qty is reached OR max number of lots is reached
-
-    # TODO Repeat until order qty is reached OR material is exhausted
 
 

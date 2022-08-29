@@ -132,7 +132,12 @@ class App(Tk):
         else:
             print(f'Assigning sets of {finished} using {material} up to {order_target_lbs} lbs')
             try:
-                functions.generate_sets(path_to_inventory_report, finished, material, order_target_lbs, 604.8, 573.6)
+                functions.generate_sets(
+                    path_to_inventory_report,
+                    finished, material, 
+                    order_target_lbs, 
+                    604.8, 
+                    573.6)
             except ValueError as error:
                 mb.showwarning(title="Error", message=error.message)
                 return
