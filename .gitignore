@@ -141,6 +141,7 @@ cython_debug/
 # Local unstructured testing folder and files
 sandbox/
 *.db3
+pseudo.txt
 
 # Editor settings
 .vscode/
