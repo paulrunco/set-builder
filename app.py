@@ -4,6 +4,7 @@ from tkinter import ttk
 import webbrowser
 
 import functions
+import dbase
 
 class App(Tk):
     def __init__(self):
@@ -14,8 +15,10 @@ class App(Tk):
         self.version = "0.1.0"
         self.author = "PRunco"
 
-        # Connect to database
-        # TODO
+        self.db = dbase.Database()
+        #self.db.add_product('test', 'product 2', 15)
+        self.products = self.db.get_products()
+        self.finished = [(product[0], product[1]) for product in self.products]
 
         ## Menu
         self.menubar = Menu(self)
@@ -79,7 +82,6 @@ class App(Tk):
         self.selections.grid(row=3, column=0, columnspan=2, sticky='ew', padx=5, pady=5)
         
         ## Finished Options
-        self.finished = ['-','1475']
         self.finished_option = StringVar(self)
         self.finished_option.set(self.finished[0])
 
@@ -119,10 +121,10 @@ class App(Tk):
     def build_sets(self):
         print("Clicked build set button...")
         path_to_inventory_report = self.inventory_report_entry.get()
-        if path_to_inventory_report == "":
-            mb.showwarning(title="Warning: ID-10T", message="Please select an inventory report")
-            self.inventory_report_entry.config(background='red')
-            return
+        # if path_to_inventory_report == "":
+        #     mb.showwarning(title="Warning: ID-10T", message="Please select an inventory report")
+        #     self.inventory_report_entry.config(background='red')
+        #     return
         finished = self.finished_option.get()
         material = self.material_option.get()
         order_target_lbs = int(self.order_weight_entry.get())
@@ -146,6 +148,7 @@ class App(Tk):
         webbrowser.open('https://github.com/paulrunco/set-builder')
 
     def close_app(self, event=None):
+        self.db.close()
         self.quit()
 
 if __name__=="__main__":
