@@ -24,7 +24,7 @@ class Database:
             except FileExistsError:
                 pass
             self.cur = connect(self.path, 'test.db3')
-            self.cur.execute("CREATE TABLE product(name, description, max_input_lots)")
+            self.cur.execute("CREATE TABLE product(product_item, product_code, material_item, target_lbs, min_lbs, max_lots)")
         
     def add_product(self, name, description, max_input_lots):
         data = (name, description, max_input_lots)

@@ -18,7 +18,11 @@ class App(Tk):
         self.db = dbase.Database()
         #self.db.add_product('test', 'product 2', 15)
         self.products = self.db.get_products()
-        self.finished = [(product[0], product[1]) for product in self.products]
+        print(self.products)
+        if self.products:
+            self.finished = [(product[0], product[1]) for product in self.products]
+        else:
+            self.finished = ['-']
 
         ## Menu
         self.menubar = Menu(self)
