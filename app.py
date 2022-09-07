@@ -2,6 +2,7 @@ from tkinter import Label, Entry, Button, LabelFrame, Menu, OptionMenu, StringVa
 from tkinter import messagebox as mb
 from tkinter import ttk
 import webbrowser
+from os import path
 
 import functions
 import dbase
@@ -11,6 +12,8 @@ class App(Tk):
         super().__init__()
 
         self.resizable(False, False)
+        path_to_icon = path.abspath(path.join(path.dirname(__file__), 'icon.ico'))
+        self.iconbitmap(path_to_icon)
         self.title('Set Builder Utility')
         self.version = "0.1.0"
         self.author = "PRunco"

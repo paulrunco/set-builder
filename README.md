@@ -20,3 +20,5 @@ Download and run the latest release.
 
 ## Issues or Feature Requests
 Please submit issues [here](https://github.com/paulrunco/set-builder/issues) or email the author directly.
+
+[Icon created by Freepik - Flaticon](https://www.flaticon.com/authors/freepik)
