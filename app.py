@@ -1,6 +1,7 @@
-from tkinter import Label, Entry, Button, LabelFrame, Menu, OptionMenu, StringVar, filedialog, Tk, END
+from tkinter import VERTICAL, Label, Entry, Button, LabelFrame, Menu, OptionMenu, StringVar, filedialog, Tk, END
 from tkinter import messagebox as mb
 from tkinter import ttk
+from turtle import width
 import webbrowser
 from os import path
 
@@ -19,9 +20,8 @@ class App(Tk):
         self.author = "PRunco"
 
         self.db = dbase.Database()
-        #self.db.add_product('test', 'product 2', 15)
         self.products = self.db.get_products()
-        print(self.products)
+
         if self.products:
             self.finished = [(product[0], product[1]) for product in self.products]
         else:
@@ -55,19 +55,14 @@ class App(Tk):
 
         self.set_builder = ttk.Frame(self.tabbed_layout)
         self.set_builder.grid()
-        self.products = ttk.Frame(self.tabbed_layout)
-        self.products.grid()
-        self.materials = ttk.Frame(self.tabbed_layout)
-        self.materials.grid()
-        self.boms = ttk.Frame(self.tabbed_layout)
-        self.boms.grid()
+        self.setup = ttk.Frame(self.tabbed_layout)
+        self.setup.grid()
 
-        self.tabbed_layout.add(self.set_builder, text="Set Builder")
-        self.tabbed_layout.add(self.products, text="Products")
-        self.tabbed_layout.add(self.materials, text="Materials")
-        self.tabbed_layout.add(self.boms, text="BOMs")
+        self.tabbed_layout.add(self.set_builder, text="Builder")
+        self.tabbed_layout.add(self.setup, text="Setup")
 
-        ## Inventory Report Entry
+        ## Builder Tab
+        # Inventory Report Entry
         self.inventory_report_label = Label(
             self.set_builder,
             text="Inventory Report",
@@ -84,15 +79,15 @@ class App(Tk):
             command=lambda: self.browse_for("inventory_report")
         ).grid(row=1, column=3, padx=5, pady=(0,5), sticky='w')        
 
-        ## Frame for set selection options
+        # Frame for set selection options
         self.selections = LabelFrame(self.set_builder, relief='groove', borderwidth=1, text="Product Selection")
         self.selections.grid(row=3, column=0, columnspan=2, sticky='ew', padx=5, pady=5)
         
-        ## Finished Options
+        # Finished Options
         self.finished_option = StringVar(self)
         self.finished_option.set(self.finished[0])
 
-        ## Material Options
+        # Material Options
         self.materials = ['1570']
         self.material_option = StringVar(self)
         self.material_option.set(self.materials[0])
@@ -105,7 +100,7 @@ class App(Tk):
         self.options_label = Label(self.selections, text="Material").grid(row=2, column=0, sticky='e', padx=5, pady=5)
         self.material_options = OptionMenu(self.selections, self.material_option, *self.materials).grid(row=2, column=1, sticky='ew', padx=(0,5), pady=5)
 
-        ## Frame for set information
+        # Frame for set information
         self.information = LabelFrame(self.set_builder, relief='groove', borderwidth=1, text='Info')
         self.information.grid(row=3, column=2, columnspan=2, sticky='ewns', padx=5, pady=5)
 
@@ -114,6 +109,43 @@ class App(Tk):
         # Generate sets
         self.set_builder = Button(self.set_builder, text="Generate sets", command=lambda: self.build_sets()
         ).grid(row=4, column=0, columnspan=4, sticky='ew', padx=5, pady=5)
+
+        ## Setup Tab
+        columns = ('id', 'product', 'code', 'material', 'target_lbs', 'min_lbs', 'max_lots')
+        self.tree = ttk.Treeview(self.setup, columns=columns, show='headings')
+        self.tree.heading('id', text='ID')
+        self.tree.heading('product', text='Product')
+        self.tree.heading('code', text='Code')
+        self.tree.heading('material', text='Material')
+        self.tree.heading('target_lbs', text='Target Lbs')
+        self.tree.heading('min_lbs', text='Min Lbs',)
+        self.tree.heading('max_lots', text='Max Lots')
+        
+
+        self.tree.column('id', width=0, stretch=False)
+        self.tree.column('product', width=60, anchor='w')
+        self.tree.column('code', anchor='w')
+        self.tree.column('material', width=60, anchor='w')
+        self.tree.column('target_lbs', width=74, anchor='e')
+        self.tree.column('min_lbs', width=74, anchor='e')
+        self.tree.column('max_lots', width=64, anchor='center')
+
+        self.tree.grid(row=0, column=0, sticky='nsew')
+
+        self.scrollbar = ttk.Scrollbar(self.setup, orient=VERTICAL, command=self.tree.yview)
+        self.tree.configure(yscrollcommand=self.scrollbar.set)
+        self.scrollbar.grid(row=0,column=1,sticky='ns')
+
+
+        for product in self.products:
+            self.tree.insert('', END, values=product)
+
+        self.tree.bind('<<TreeviewSelect>>', self.item_selected)
+
+    def item_selected(self, event):
+        for selected_item in self.tree.selection():
+            item = self.tree.item(selected_item)
+            print(item['values'])
 
     def browse_for(self, target="inventory_report"):
         file_name = filedialog.askopenfilename(
