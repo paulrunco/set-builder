@@ -1,4 +1,4 @@
-from tkinter import VERTICAL, Label, Entry, Button, LabelFrame, Menu, OptionMenu, StringVar, filedialog, Tk, END
+from tkinter import VERTICAL, Label, Entry, Button, LabelFrame, Menu, OptionMenu, StringVar, filedialog, Frame, Tk, END
 from tkinter import messagebox as mb
 from tkinter import ttk
 from turtle import width
@@ -12,7 +12,9 @@ class App(Tk):
     def __init__(self):
         super().__init__()
 
-        self.resizable(False, False)
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+        self.resizable(True, True)
         path_to_icon = path.abspath(path.join(path.dirname(__file__), 'icon.ico'))
         self.iconbitmap(path_to_icon)
         self.title('Set Builder Utility')
@@ -51,12 +53,17 @@ class App(Tk):
 
         ## App window layout managed in tabs as a notebook widget
         self.tabbed_layout = ttk.Notebook(self)
-        self.tabbed_layout.grid()
+        self.tabbed_layout.grid(sticky='nsew')
+        self.tabbed_layout.columnconfigure(0, weight=1)
 
         self.set_builder = ttk.Frame(self.tabbed_layout)
-        self.set_builder.grid()
+        self.set_builder.grid(sticky='nsew')
+        self.set_builder.columnconfigure(0, weight=1)
+        self.set_builder.rowconfigure(3, weight=1)
         self.setup = ttk.Frame(self.tabbed_layout)
-        self.setup.grid()
+        self.setup.grid(sticky='nsew')
+        self.setup.columnconfigure(0, weight=1)
+        self.setup.rowconfigure(0, weight=1)
 
         self.tabbed_layout.add(self.set_builder, text="Builder")
         self.tabbed_layout.add(self.setup, text="Setup")
@@ -72,16 +79,16 @@ class App(Tk):
             width=80,
             textvariable=StringVar
         )
-        self.inventory_report_entry.grid(row=1, column=0, padx=5, pady=(0,5), sticky='w', columnspan=3)
+        self.inventory_report_entry.grid(row=1, column=0, padx=5, pady=(0,5), sticky='we', columnspan=3)
         self.inventory_report_button = Button(
             self.set_builder,
             text="Browse",
             command=lambda: self.browse_for("inventory_report")
-        ).grid(row=1, column=3, padx=5, pady=(0,5), sticky='w')        
+        ).grid(row=1, column=3, padx=5, pady=(0,5), sticky='w'),         
 
         # Frame for set selection options
         self.selections = LabelFrame(self.set_builder, relief='groove', borderwidth=1, text="Product Selection")
-        self.selections.grid(row=3, column=0, columnspan=2, sticky='ew', padx=5, pady=5)
+        self.selections.grid(row=3, column=0, columnspan=2, sticky='nsew', padx=5, pady=5)
         
         # Finished Options
         self.finished_option = StringVar(self)
@@ -108,7 +115,7 @@ class App(Tk):
 
         # Generate sets
         self.set_builder = Button(self.set_builder, text="Generate sets", command=lambda: self.build_sets()
-        ).grid(row=4, column=0, columnspan=4, sticky='ew', padx=5, pady=5)
+        ).grid(row=4, column=0, columnspan=4, sticky='ews', padx=5, pady=5)
 
         ## Setup Tab
         columns = ('id', 'product', 'code', 'material', 'target_lbs', 'min_lbs', 'max_lots')
@@ -121,7 +128,6 @@ class App(Tk):
         self.tree.heading('min_lbs', text='Min Lbs',)
         self.tree.heading('max_lots', text='Max Lots')
         
-
         self.tree.column('id', width=0, stretch=False)
         self.tree.column('product', width=60, anchor='w')
         self.tree.column('code', anchor='w')
@@ -136,11 +142,35 @@ class App(Tk):
         self.tree.configure(yscrollcommand=self.scrollbar.set)
         self.scrollbar.grid(row=0,column=1,sticky='ns')
 
-
         for product in self.products:
             self.tree.insert('', END, values=product)
 
         self.tree.bind('<<TreeviewSelect>>', self.item_selected)
+
+        self.edit_frame = Frame(self.setup)
+        self.edit_frame.columnconfigure((0,1,2,3,4,5), weight=1)
+        self.edit_frame.grid(row=1,column=0, sticky='nsew', padx=(5,5), pady=(5,5))
+
+        self.edit_product_label = Label(self.edit_frame, text='Product').grid(row=0, column=0, sticky='w')
+        self.edit_code_label = Label(self.edit_frame, text='Code').grid(row=0, column=1, sticky='w')
+        self.edit_material_label = Label(self.edit_frame, text='Material').grid(row=0, column=2, sticky='w')
+        self.edit_target_lbs_label = Label(self.edit_frame, text='Target Lbs').grid(row=0, column=3, sticky='w')
+        self.edit_min_lbs_label = Label(self.edit_frame, text='Min Lbs').grid(row=0, column=4, sticky='w')
+        self.edit_max_lots_label = Label(self.edit_frame, text='Max Lots').grid(row=0, column=5, sticky='w')
+
+        self.edit_product_entry = Entry(self.edit_frame, width=10)
+        self.edit_product_entry.grid(row=1, column=0, sticky='ew')
+        self.edit_code_entry = Entry(self.edit_frame, width=34)
+        self.edit_code_entry.grid(row=1, column=1, sticky='ew')
+        self.edit_material_entry = Entry(self.edit_frame, width=9)
+        self.edit_material_entry.grid(row=1, column=2, sticky='ew')
+        self.edit_target_lbs_entry = Entry(self.edit_frame, width=12)
+        self.edit_target_lbs_entry.grid(row=1, column=3, sticky='ew')
+        self.edit_min_lbs_entry = Entry(self.edit_frame, width=12)
+        self.edit_min_lbs_entry.grid(row=1, column=4, sticky='ew')
+        self.edit_max_lots_entry = Entry(self.edit_frame, width=12)
+        self.edit_max_lots_entry.grid(row=1, column=5, sticky='ew')
+
 
     def item_selected(self, event):
         for selected_item in self.tree.selection():
