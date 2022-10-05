@@ -5,6 +5,8 @@ from turtle import width
 import webbrowser
 from os import path
 
+from numpy import dtype
+
 import functions
 import dbase
 
@@ -63,7 +65,7 @@ class App(Tk):
         self.setup = ttk.Frame(self.tabbed_layout)
         self.setup.grid(sticky='nsew')
         self.setup.columnconfigure(0, weight=1)
-        self.setup.rowconfigure(0, weight=1)
+        self.setup.rowconfigure(1, weight=1)
 
         self.tabbed_layout.add(self.set_builder, text="Builder")
         self.tabbed_layout.add(self.setup, text="Setup")
@@ -118,8 +120,15 @@ class App(Tk):
         ).grid(row=4, column=0, columnspan=4, sticky='ews', padx=5, pady=5)
 
         ## Setup Tab
+        self.action_row = Frame(self.setup)
+        self.action_row.columnconfigure((0,1), weight=1)
+        self.action_row.grid(row=0, column=0, sticky='e')
+
+        self.edit_button = Button(self.action_row, text='Edit', width=8, command=lambda: self.start_edit()).grid(row=0, column=0, sticky='e')
+        self.edit_button = Button(self.action_row, text='Delete', width=8, command=lambda: self.delete()).grid(row=0, column=1, sticky='e')
+
         columns = ('id', 'product', 'code', 'material', 'target_lbs', 'min_lbs', 'max_lots')
-        self.tree = ttk.Treeview(self.setup, columns=columns, show='headings')
+        self.tree = ttk.Treeview(self.setup, columns=columns, show='headings', selectmode='browse')
         self.tree.heading('id', text='ID')
         self.tree.heading('product', text='Product')
         self.tree.heading('code', text='Code')
@@ -136,20 +145,17 @@ class App(Tk):
         self.tree.column('min_lbs', width=74, anchor='e')
         self.tree.column('max_lots', width=64, anchor='center')
 
-        self.tree.grid(row=0, column=0, sticky='nsew')
+        self.tree.grid(row=1, column=0, sticky='nsew')
 
         self.scrollbar = ttk.Scrollbar(self.setup, orient=VERTICAL, command=self.tree.yview)
         self.tree.configure(yscrollcommand=self.scrollbar.set)
-        self.scrollbar.grid(row=0,column=1,sticky='ns')
+        self.scrollbar.grid(row=1,column=1,sticky='ns')
 
-        for product in self.products:
-            self.tree.insert('', END, values=product)
-
-        self.tree.bind('<<TreeviewSelect>>', self.item_selected)
+        self.refresh()
 
         self.edit_frame = Frame(self.setup)
         self.edit_frame.columnconfigure((0,1,2,3,4,5), weight=1)
-        self.edit_frame.grid(row=1,column=0, sticky='nsew', padx=(5,5), pady=(5,5))
+        self.edit_frame.grid(row=2,column=0, sticky='nsew', padx=(5,5), pady=(5,5))
 
         self.edit_product_label = Label(self.edit_frame, text='Product').grid(row=0, column=0, sticky='w')
         self.edit_code_label = Label(self.edit_frame, text='Code').grid(row=0, column=1, sticky='w')
@@ -171,11 +177,66 @@ class App(Tk):
         self.edit_max_lots_entry = Entry(self.edit_frame, width=12)
         self.edit_max_lots_entry.grid(row=1, column=5, sticky='ew')
 
+        self.edit_entries = [
+            self.edit_product_entry,
+            self.edit_code_entry, 
+            self.edit_material_entry,
+            self.edit_target_lbs_entry,
+            self.edit_min_lbs_entry,
+            self.edit_max_lots_entry] # list of entries for batch handling
 
-    def item_selected(self, event):
+        self.edit_save_button = Button(self.edit_frame, text='Save', width=20, command=lambda: self.save()).grid(row=2, column=5, pady=(5,0), sticky='es')
+
+    def get_selected_item(self):
         for selected_item in self.tree.selection():
-            item = self.tree.item(selected_item)
-            print(item['values'])
+            item = self.tree.item(selected_item)['values']
+            id = item[0]
+            return id, item[1::]
+        
+    def start_edit(self):
+        id, product = self.get_selected_item()
+        self.id = id # store id of item being edited
+        for entry, data in zip(self.edit_entries, product):
+            entry.insert(0, data)
+
+    def clear_edits(self):
+        for entry in self.edit_entries:
+            entry.delete(0, END)
+            self.id = None
+        
+    def delete(self):
+        if self.tree.selection():
+            for selected_item in self.tree.selection():
+                item = self.tree.item(selected_item)
+                id = item['values'][0]
+                self.db.delete_product(id)
+        self.refresh()
+
+    def save(self):
+        
+        product = self.edit_product_entry.get()
+        code = self.edit_code_entry.get()
+        material = self.edit_material_entry.get()
+        target_lbs = float(self.edit_target_lbs_entry.get())
+        min_lbs = float(self.edit_min_lbs_entry.get())
+        max_lots = int(self.edit_max_lots_entry.get())
+
+        product = [product, code, material, target_lbs, min_lbs, max_lots]
+
+        if self.id:
+            self.db.update_product(self.id, product)
+        else:
+            self.db.add_product(*product)
+
+        self.refresh()
+        self.clear_edits()
+
+    def refresh(self):
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+        self.products = self.db.get_products()
+        for product in self.products:
+            self.tree.insert('', END, values=product)
 
     def browse_for(self, target="inventory_report"):
         file_name = filedialog.askopenfilename(

@@ -45,7 +45,15 @@ class Database:
 
     # Because SQLite does not allow column names to be parameterized, and string
     # interpolation would be vulnerable to injection, each field has its own update
-    # function.
+    # function which is wrapped into a single update function.
+    def update_product(self, id, values):
+        self.update_product_name(id, values[0])
+        self.update_product_code(id, values[1])
+        self.update_product_material(id, values[2])
+        self.update_product_target_lbs(id, values[3])
+        self.update_product_min_lbs(id, values[4])
+        self.update_product_max_lots(id, values[5])
+
     def update_product_name(self, id, value):
         data = (value, id)
         self.cur.execute("UPDATE product SET product = ? WHERE rowid = ?", data)
