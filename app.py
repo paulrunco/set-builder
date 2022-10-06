@@ -194,6 +194,7 @@ class App(Tk):
             return id, item[1::]
         
     def start_edit(self):
+        self.clear_edits()
         id, product = self.get_selected_item()
         self.id = id # store id of item being edited
         for entry, data in zip(self.edit_entries, product):
