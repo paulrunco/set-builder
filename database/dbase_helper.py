@@ -1,4 +1,4 @@
-import dbase
+import database.dbase as dbase
 
 db = dbase.Database()
 
@@ -8,13 +8,13 @@ data = [
     ("1541", "P2362W-190-003", "1572", 47.0, 42.3, 2),
 ]
 
-# db.add_products(data)
+db.add_products(data)
 
 # db.add_product('1111', 'Test Product', '5555', 500, 450, 2)
 
 # db.update_product_max_lots(1, 42)
 
-# db.delete_product(2)
+# db.delete_product(0)
 
 # db.delete_products()
 
