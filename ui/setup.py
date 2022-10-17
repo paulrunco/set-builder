@@ -6,6 +6,7 @@ class Setup(tk.Frame):
         super().__init__(parent)
 
         self.db = database
+        self.id = ''
     
         self.action_row = tk.Frame(self)
         self.action_row.columnconfigure((0,1), weight=1)

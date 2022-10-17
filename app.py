@@ -63,6 +63,15 @@ class App(tk.Tk):
         self.tabbed_layout.add(self.set_builder, text="Builder")
         self.tabbed_layout.add(self.setup, text="Setup")
 
+        self.bind_all('<<NotebookTabChanged>>', self.on_tab_selected)
+
+    
+    def on_tab_selected(self, event):
+        selected_tab = event.widget.select()
+        tab_text = event.widget.tab(selected_tab, 'text')
+        if tab_text == 'Builder':
+            self.set_builder.refresh_products()
+    
     def open_docs(self, event=None):
         webbrowser.open('https://github.com/paulrunco/set-builder')
 

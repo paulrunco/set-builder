@@ -48,7 +48,8 @@ class Builder(tk.Frame):
         self.material_option.set(self.materials[0])
 
         self.options_label = tk.Label(self.selections, text="Product").grid(row=0, column=0, sticky='e', padx=5, pady=5)
-        self.finished_options = tk.OptionMenu(self.selections, self.finished_option, *self.finished).grid(row=0, column=1, sticky='ew', padx=(0,5), pady=5)
+        self.finished_options = tk.OptionMenu(self.selections, self.finished_option, *self.finished)
+        self.finished_options.grid(row=0, column=1, sticky='ew', padx=(0,5), pady=5)
         self.options_label = tk.Label(self.selections, text="Weight (lbs)").grid(row=1, column=0, sticky='e', padx=5, pady=(0,5))
         self.order_weight_entry = tk.Entry(self.selections, width=8, textvariable=tk.StringVar)
         self.order_weight_entry.grid(row=1, column=1, sticky='ew', padx=(0,5), pady=(0,5))
@@ -97,3 +98,20 @@ class Builder(tk.Frame):
             except ValueError as error:
                 mb.showwarning(title="Error", message=error.message)
                 return
+
+    def refresh_products(self):
+        self.products = self.db.get_products()
+
+        if self.products:
+            self.finished = [(product[0], product[1]) for product in self.products]
+        else:
+            self.finished = ['-']
+
+        self.finished_options['menu'].delete(0, 'end')
+        for fin in self.finished:
+            self.finished_options['menu'].add_command(label=fin, command=tk._setit(self.finished_option, fin))
+
+        self.finished_option.set(self.finished[0])
+
+
+        
