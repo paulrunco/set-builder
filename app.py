@@ -51,7 +51,7 @@ class App(tk.Tk):
         self.tabbed_layout.grid(sticky='nsew')
         self.tabbed_layout.columnconfigure(0, weight=1)
 
-        self.set_builder = Builder(self, self.products)
+        self.set_builder = Builder(self, self.db)
         self.set_builder.grid(sticky='nsew')
         self.set_builder.columnconfigure(0, weight=1)
         self.set_builder.rowconfigure(3, weight=1)

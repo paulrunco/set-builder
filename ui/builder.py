@@ -5,10 +5,11 @@ from tkinter import filedialog
 import functions.functions as functions
 
 class Builder(tk.Frame):
-    def __init__(self, parent, products):
+    def __init__(self, parent, database):
         super().__init__(parent)
 
-        self.products = products
+        self.db = database
+        self.products = self.db.get_products()
 
         if self.products:
             self.finished = [(product[0], product[1]) for product in self.products]
