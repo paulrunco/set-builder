@@ -36,7 +36,7 @@ class Builder(tk.Frame):
 
         # Frame for set selection options
         self.selections = tk.LabelFrame(self, relief='groove', borderwidth=1, text="Product Selection")
-        self.selections.grid(row=3, column=0, columnspan=2, sticky='nsew', padx=5, pady=5)
+        self.selections.grid(row=3, column=0, columnspan=4, sticky='nsew', padx=5, pady=5)
         
         # Finished Options
         self.finished_option = tk.StringVar(self)
@@ -59,10 +59,6 @@ class Builder(tk.Frame):
         self.material_options.grid(row=2, column=1, sticky='ew', padx=(0,5), pady=5)
 
         self.on_finished_select
-
-        # Frame for set information
-        self.information = tk.LabelFrame(self, relief='groove', borderwidth=1, text='Info')
-        self.information.grid(row=3, column=2, columnspan=2, sticky='ewns', padx=5, pady=5)
 
         # Generate sets
         self = tk.Button(self, text="Generate sets", command=self.build_sets).grid(row=4, column=0, columnspan=4, sticky='ews', padx=5, pady=5)
