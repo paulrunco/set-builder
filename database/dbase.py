@@ -13,9 +13,9 @@ class Database:
             print('Connected!')
             return self.con.cursor()
         
-        if Path(self.path + 'test.db3').is_file():
+        if Path(self.path + 'database.db3').is_file():
             print('Database found...')
-            self.cur = connect(self.path, 'test.db3')
+            self.cur = connect(self.path, 'database.db3')
 
         else:
             print('Database doesn\'t exist, creating...')
@@ -23,7 +23,7 @@ class Database:
                 Path(self.path).mkdir(parents=True)
             except FileExistsError:
                 pass
-            self.cur = connect(self.path, 'test.db3')
+            self.cur = connect(self.path, 'database.db3')
             self.cur.execute("CREATE TABLE product(product, code, material, target_lbs, min_lbs, max_lots)")
         
     def add_product(self, product:str, code:str, material:str, target_lbs:float, min_lbs:float, max_lots:int):
