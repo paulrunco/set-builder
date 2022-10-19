@@ -4,7 +4,7 @@
 
 ## About
 
-This utility builds sets of finished goods based on a user-supplied inventory report and user selections. Sets are built in the user-specified order until the raw material list is exhausted. The tool attempts to select raw material rolls to make sets as close to the maximum allowable weight as possible.
+This utility groups rolls of raw materials into sets of finished goods based on a user-supplied inventory report and user selections. Rolls are assigned to sets up to the configured set weight limit and additional sets are created up to the specified order weight. The algorithm attempts to balance both FIFO and set weight targets in its assignment choices.
 
 ## Installation
 Download and run the latest release.
