@@ -12,7 +12,7 @@ class Builder(tk.Frame):
         self.products = self.db.get_products()
 
         if self.products:
-            self.finished = [(product[0], product[1]) for product in self.products]
+            self.finished = [product[1] for product in self.products]
         else:
             self.finished = ['-']
 
@@ -108,7 +108,7 @@ class Builder(tk.Frame):
         self.products = self.db.get_products()
 
         if self.products:
-            self.finished = [(product[0], product[1]) for product in self.products]
+            self.finished = [product[1] for product in self.products]
         else:
             self.finished = ['-']
 
@@ -120,7 +120,6 @@ class Builder(tk.Frame):
 
     def on_finished_select(self, *args):
         product = self.finished_option.get()
-        product = product.split('\'')[1] # extract part number from sting tuple
         products = self.db.get_products_with_name(product )
 
         materials = [product[3] for product in products] # extract material part number
