@@ -41,20 +41,24 @@ class Builder(tk.Frame):
         # Finished Options
         self.finished_option = tk.StringVar(self)
         self.finished_option.set(self.finished[0])
+        self.finished_option.trace('w', self.on_finished_select)
 
         # Material Options
-        self.materials = ['1570']
+        self.materials = ['-']
         self.material_option = tk.StringVar(self)
         self.material_option.set(self.materials[0])
 
         self.options_label = tk.Label(self.selections, text="Product").grid(row=0, column=0, sticky='e', padx=5, pady=5)
-        self.finished_options = tk.OptionMenu(self.selections, self.finished_option, *self.finished)
+        self.finished_options = tk.OptionMenu(self.selections, self.finished_option, *self.finished, command=self.on_finished_select)
         self.finished_options.grid(row=0, column=1, sticky='ew', padx=(0,5), pady=5)
         self.options_label = tk.Label(self.selections, text="Weight (lbs)").grid(row=1, column=0, sticky='e', padx=5, pady=(0,5))
         self.order_weight_entry = tk.Entry(self.selections, width=8, textvariable=tk.StringVar)
         self.order_weight_entry.grid(row=1, column=1, sticky='ew', padx=(0,5), pady=(0,5))
         self.options_label = tk.Label(self.selections, text="Material").grid(row=2, column=0, sticky='e', padx=5, pady=5)
-        self.material_options = tk.OptionMenu(self.selections, self.material_option, *self.materials).grid(row=2, column=1, sticky='ew', padx=(0,5), pady=5)
+        self.material_options = tk.OptionMenu(self.selections, self.material_option, *self.materials)
+        self.material_options.grid(row=2, column=1, sticky='ew', padx=(0,5), pady=5)
+
+        self.on_finished_select
 
         # Frame for set information
         self.information = tk.LabelFrame(self, relief='groove', borderwidth=1, text='Info')
@@ -62,6 +66,7 @@ class Builder(tk.Frame):
 
         # Generate sets
         self = tk.Button(self, text="Generate sets", command=self.build_sets).grid(row=4, column=0, columnspan=4, sticky='ews', padx=5, pady=5)
+
 
     def browse_for(self, target="inventory_report"):
         file_name = filedialog.askopenfilename(
@@ -113,5 +118,21 @@ class Builder(tk.Frame):
 
         self.finished_option.set(self.finished[0])
 
+    def on_finished_select(self, *args):
+        product = self.finished_option.get()
+        product = product.split('\'')[1] # extract part number from sting tuple
+        products = self.db.get_products_with_name(product )
+
+        materials = [product[3] for product in products] # extract material part number
+
+        # Update the materials dropdown
+        self.material_options['menu'].delete(0, 'end')
+
+        if materials:
+            for material in materials:
+                self.material_options['menu'].add_command(label=material, command=tk._setit(self.material_option, material))
+
+            self.material_option.set(self.materials[0])
+        
 
         

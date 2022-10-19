@@ -39,6 +39,10 @@ class Database:
         res = self.cur.execute("SELECT rowid, * from product WHERE rowid=?", str(id))
         return res.fetchall()
 
+    def get_products_with_name(self, product):
+        res = self.cur.execute("SELECT rowid, * from product WHERE product=?", (product,))
+        return res.fetchall()
+
     def get_products(self):
         res = self.cur.execute("SELECT rowid, * FROM product")
         return res.fetchall()
@@ -85,7 +89,7 @@ class Database:
         self.con.commit()
 
     def delete_product(self, id):
-        self.cur.execute("DELETE FROM product WHERE rowid=?", str(id))
+        self.cur.execute("DELETE FROM product WHERE rowid=?", (id,))
         self.con.commit()
 
     def delete_products(self):
