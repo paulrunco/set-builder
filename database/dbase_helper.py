@@ -1,4 +1,4 @@
-import database.dbase as dbase
+import dbase
 
 db = dbase.Database()
 

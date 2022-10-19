@@ -43,6 +43,10 @@ class Database:
         res = self.cur.execute("SELECT rowid, * from product WHERE product=?", (product,))
         return res.fetchall()
 
+    def get_product_with_name_material(self, product, material):
+        res = self.cur.execute("SELECT rowid, * from product WHERE product=? AND material=?", (product, material))
+        return res.fetchall()
+        
     def get_products(self):
         res = self.cur.execute("SELECT rowid, * FROM product")
         return res.fetchall()

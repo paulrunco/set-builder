@@ -79,30 +79,45 @@ class Builder(tk.Frame):
             print(file_name)
 
     def build_sets(self):
-        print("Clicked build set button...")
         path_to_inventory_report = self.inventory_report_entry.get()
         if path_to_inventory_report == "":
             mb.showwarning(title="Warning: ID-10T", message="Please select an inventory report")
             self.inventory_report_entry.config(background='red')
             return
+
         finished = self.finished_option.get()
         material = self.material_option.get()
         order_target_lbs = int(self.order_weight_entry.get())
+
         if order_target_lbs == '':
             mb.showwarning(title="Warning: ID-10T", message="Please enter a target order weight")
             self.order_weight_entry.config(background='red')
         else:
             print(f'Assigning sets of {finished} using {material} up to {order_target_lbs} lbs')
-            try:
-                functions.generate_sets(
-                    path_to_inventory_report,
-                    finished, material, 
-                    order_target_lbs, 
-                    604.8, 
-                    573.6)
-            except ValueError as error:
-                mb.showwarning(title="Error", message=error.message)
-                return
+
+            product = self.db.get_product_with_name_material(finished, material)
+
+            if len(product) > 1:
+                mb.showerror(title="Error - Too Many Materials",
+                message="More than one material exists for this configuration, please check your settings.")
+            elif len(product) == 0:
+                mb.showerror(title="Error - No Materials",
+                message="No material exist for this configuration, please check your settings.")
+            elif len(product) == 1:
+
+                (id, _, _, description, target_lbs, min_lbs, max_lots ) = product[0]
+
+                try:
+                    functions.generate_sets(
+                        path_to_inventory_report,
+                        finished, material, 
+                        order_target_lbs, 
+                        target_lbs, 
+                        min_lbs)
+
+                except ValueError as error:
+                    mb.showwarning(title="Error", message=error.message)
+                    return
 
     def refresh_products(self):
         self.products = self.db.get_products()
