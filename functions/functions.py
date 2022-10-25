@@ -55,18 +55,24 @@ def generate_sets(
                     batch = rolls.at[pick, 'Batch']
                     if batch not in set_lots:
                         set_lots.append(batch)
-            else:
-                print('No eligible rolls')
-                print(set_lots)
-                print(rolls.loc[rolls['Set'] == set_number])
-                return
+            else: 
+                # Set cannot be made with first two lots so walk back the first lot and try again
+                undo = set_lots.pop(1) # keep oldest lot by default
+                print(f'Unable to complete set with first two lots, resetting lot {undo}')
+
+                subtract_weight =  rolls.loc[rolls['Batch'] == undo]['Weight (Lbs)'].sum()
+                rolls.loc[rolls['Batch'] == undo, 'Set'] = 0
+                set_weight_lbs -= subtract_weight # 
+
+                pass
      
             print(f'Order weight: {order_weight_lbs} lbs of {order_target_lbs}')
             print(rolls.groupby(['Set']).sum()['Weight (Lbs)'])
 
         set_number += 1
-        order_weight_lbs += set_weight_lbs    
+        order_weight_lbs += set_weight_lbs  
             
+    rolls.loc[rolls['Set'] == 0, 'Set'] = '' # reset undersized lots that were set aside
 
     with pd.ExcelWriter(
         inventory_report,
