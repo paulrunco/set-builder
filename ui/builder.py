@@ -9,12 +9,7 @@ class Builder(tk.Frame):
         super().__init__(parent)
 
         self.db = database
-        self.products = self.db.get_products()
-
-        if self.products:
-            self.finished = [product[1] for product in self.products]
-        else:
-            self.finished = ['-']
+        self.finished = []
 
         # Inventory Report Entry
         self.inventory_report_label = tk.Label(
@@ -40,7 +35,7 @@ class Builder(tk.Frame):
         
         # Finished Options
         self.finished_option = tk.StringVar(self)
-        self.finished_option.set(self.finished[0])
+        #self.finished_option.set(self.finished[0])
         self.finished_option.trace('w', self.on_finished_select)
 
         # Material Options
@@ -49,7 +44,7 @@ class Builder(tk.Frame):
         self.material_option.set(self.materials[0])
 
         self.options_label = tk.Label(self.selections, text="Product").grid(row=0, column=0, sticky='e', padx=5, pady=5)
-        self.finished_options = tk.OptionMenu(self.selections, self.finished_option, *self.finished, command=self.on_finished_select)
+        self.finished_options = tk.OptionMenu(self.selections, self.finished_option, self.finished, command=self.on_finished_select)
         self.finished_options.grid(row=0, column=1, sticky='ew', padx=(0,5), pady=5)
         self.options_label = tk.Label(self.selections, text="Weight (lbs)").grid(row=1, column=0, sticky='e', padx=5, pady=(0,5))
         self.order_weight_entry = tk.Entry(self.selections, width=8, textvariable=tk.StringVar)
@@ -57,8 +52,6 @@ class Builder(tk.Frame):
         self.options_label = tk.Label(self.selections, text="Material").grid(row=2, column=0, sticky='e', padx=5, pady=5)
         self.material_options = tk.OptionMenu(self.selections, self.material_option, *self.materials)
         self.material_options.grid(row=2, column=1, sticky='ew', padx=(0,5), pady=5)
-
-        self.on_finished_select
 
         # Generate sets
         self = tk.Button(self, text="Generate sets", command=self.build_sets).grid(row=4, column=0, columnspan=4, sticky='ews', padx=5, pady=5)
@@ -119,7 +112,7 @@ class Builder(tk.Frame):
         self.products = self.db.get_products()
 
         if self.products:
-            self.finished = [product[1] for product in self.products]
+            self.finished = list(set([product[1] for product in self.products]))
         else:
             self.finished = ['-']
 
